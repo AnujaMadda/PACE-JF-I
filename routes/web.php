@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\ActivationController;
 use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\SignUpController;
 use App\Http\Controllers\EntitySwitchController;
+use App\Http\Controllers\ImportRunController;
 use App\Livewire\Dashboard;
 use App\Livewire\Placeholder;
 use Illuminate\Support\Facades\Route;
@@ -38,11 +40,12 @@ Route::middleware(['auth', 'idle', 'entity'])->group(function () {
         Route::redirect('/', '/dashboard');
         Route::get('/dashboard', Dashboard::class)->name('dashboard');
         Route::post('/entity/switch', EntitySwitchController::class)->name('entity.switch');
+        Route::get('/attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
+        Route::get('/imports/{importRun}/errors', [ImportRunController::class, 'errors'])->name('imports.errors');
 
         // Sidebar destinations delivered in later phases.
         Route::get('/capex', Placeholder::class)->name('capex.index')->defaults('section', 'capex');
         Route::get('/payments', Placeholder::class)->name('payments.index')->defaults('section', 'payments');
-        Route::get('/master-data', Placeholder::class)->name('master-data.index')->defaults('section', 'master-data');
         Route::get('/reports', Placeholder::class)->name('reports.index')->defaults('section', 'reports');
     });
 });

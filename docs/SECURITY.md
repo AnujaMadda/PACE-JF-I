@@ -48,6 +48,23 @@ The `SecurityHeaders` middleware (global) sets: CSP, `X-Frame-Options: DENY`, `X
 
 The CSP allows only same-origin resources. `script-src` currently includes `'unsafe-inline' 'unsafe-eval'` because Alpine.js, used by Livewire and Filament, evaluates expressions at runtime. Tightening this (nonces, CSP-safe Alpine) is a Phase 7 task. No external fonts, avatars or CDNs are loaded.
 
+## File uploads (Phase 2)
+- **One entry point:** `StoreAttachment`.
+  - The extension must be on the allow-list (PDF, JPG/JPEG, PNG, XLSX, DOCX, MSG). Admins can narrow the list but never widen it.
+  - The content is sniffed with `finfo` and must match the extension. XLSX and DOCX must also start with the ZIP signature, and MSG with the OLE signature, so renamed binaries are rejected.
+  - Size limit: `attachments.max_size_mb` (default 10).
+  - A SHA-256 hash is stored for each file.
+  - The antivirus hook (`AttachmentScanner`) runs before the file is stored. Infected files are refused and the attempt is audited.
+- **Storage:** private `documents` disk under `entity-{id}/YYYY/MM/{uuid}`. The original name exists only in the database. There is no public URL.
+- **One exit point:** `GET /attachments/{id}/download`. Route binding goes through the entity scope, so another entity's file is a 404. The parent record's `view` policy is checked, and the file must have passed (or skipped) the scan. The response is sent as `attachment` with `nosniff` and `no-store`. Every download is audited.
+- **Excel imports** accept only `.xlsx` files that start with a ZIP signature, up to 10 MB. They are stored privately and processed in the importer's entity. Error reports are downloadable only in that entity by people with the import permission.
+- **Audit CSV export** escapes cells beginning with `= + - @` to prevent formula injection.
+
+## Vendor bank details (Phase 2)
+- Encrypted at rest with Laravel `encrypted` casts using `APP_KEY`. **Back up `APP_KEY`**: without it the bank details cannot be decrypted.
+- Hidden from model serialisation and from Livewire state for anyone without `vendors.view_bank_details`. Lists always show `****1234`.
+- Changes are audited with masked old and new values. The plain values never enter the audit log.
+
 ## Known follow-ups
 - Phase 2: file upload hardening (MIME sniffing, size limits, scanner hook, authorised downloads).
 - Phase 7: CSP tightening, grants script, dependency audit, pen-test checklist, data-retention jobs.

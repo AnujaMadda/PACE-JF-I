@@ -385,7 +385,8 @@ Delivered as described below, with two changes: bulk user import from Excel move
 - User app shell: PACE layout, sidebar with disabled "Coming soon" items, brand tokens, and an empty dashboard.
 - **Tests:** login with entity selection, generic failure message, lockout and unlock, activation happy path and neutral responses, password rules and history, entity switch, isolation for users and entities, append-only audit.
 
-### Phase 2 — Master data
+### Phase 2 — Master data *(delivered 2026-09-25)*
+Delivered as described below, plus bulk user import, entity settings (minimum quotations) and a currency list with per-entity enablement. Decisions made during the build: imports are all-or-nothing; payment roles maintain vendor bank details; group reporting-currency rates move to Phase 6; the S3 driver package (`league/flysystem-aws-s3-v3`) is installed when hosting is chosen.
 All master tables from section 3.1 with Filament CRUD, deactivate-only (a delete guard when referenced), a GL account type flag, cost-centre owner and department, encrypted and masked vendor bank details, board papers with attachments (Documents module delivered here), effective-dated exchange rates. A generic Excel import pipeline (queued, row-level validation error report downloadable as XLSX) and exports. Kenya sample master data seeder.
 **Tests:** CRUD policies, isolation, deactivate guard, import validation report, bank detail masking and encryption, FX lookup by date, attachment upload rules and authorised download.
 

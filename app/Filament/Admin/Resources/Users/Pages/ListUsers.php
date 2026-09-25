@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Users\Pages;
 
+use App\Filament\Admin\MasterData\ExcelActions;
 use App\Filament\Admin\Resources\Users\UserResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
@@ -14,6 +15,7 @@ class ListUsers extends ListRecords
     {
         return [
             CreateAction::make(),
+            ...ExcelActions::for('users'),
         ];
     }
 }

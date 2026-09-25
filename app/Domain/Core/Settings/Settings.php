@@ -69,8 +69,11 @@ class Settings
 
         $value = $definition->cast($value);
 
-        if ($definition->rules !== []) {
-            Validator::make(['value' => $value], ['value' => $definition->rules])->validate();
+        if ($definition->rules !== [] || $definition->itemRules !== []) {
+            Validator::make(['value' => $value], array_filter([
+                'value' => $definition->rules,
+                'value.*' => $definition->itemRules,
+            ]))->validate();
         }
 
         $setting = Setting::query()

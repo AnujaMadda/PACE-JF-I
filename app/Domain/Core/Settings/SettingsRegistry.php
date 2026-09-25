@@ -2,6 +2,7 @@
 
 namespace App\Domain\Core\Settings;
 
+use App\Domain\Documents\Support\AttachmentRules;
 use InvalidArgumentException;
 
 /**
@@ -68,6 +69,13 @@ final class SettingsRegistry
             new SettingDefinition('security.lockout_minutes', 'int', 15, 'group', 'Sign-in', 'Lockout duration (minutes)', rules: ['integer', 'min:1', 'max:1440']),
             new SettingDefinition('security.session_idle_minutes', 'int', 30, 'group', 'Sign-in', 'Idle session timeout (minutes)', rules: ['integer', 'min:5', 'max:480']),
             new SettingDefinition('security.activation_link_minutes', 'int', 60, 'group', 'Sign-in', 'Activation link validity (minutes)', rules: ['integer', 'min:15', 'max:10080']),
+            // Attachments (Documents module)
+            new SettingDefinition('attachments.max_size_mb', 'int', 10, 'group', 'Attachments', 'Maximum file size (MB)', rules: ['integer', 'min:1', 'max:50']),
+            new SettingDefinition('attachments.allowed_extensions', 'list', AttachmentRules::EXTENSIONS, 'group', 'Attachments', 'Allowed file types', 'Choose from: '.implode(', ', AttachmentRules::EXTENSIONS).'. Other types are never accepted.', ['array', 'min:1'], ['in:'.implode(',', AttachmentRules::EXTENSIONS)]),
+
+            // Capex (per entity)
+            new SettingDefinition('capex.minimum_quotations', 'int', 3, 'entity', 'Capex', 'Minimum quotations per request', 'Capex categories can override this. Fewer quotations need a sole-source justification.', ['integer', 'min:0', 'max:10']),
+
             new SettingDefinition('auth.self_registration', 'bool', false, 'group', 'Sign-in', 'Allow self-registration from allowed domains', 'New accounts land in "Pending admin approval" and have no access until an admin grants it.'),
         ];
     }

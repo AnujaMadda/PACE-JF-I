@@ -36,6 +36,36 @@ class ProvisionEntityRoles
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
+    /**
+     * Roll out newly added catalogue permissions to the default roles of every
+     * existing entity, once (called from a data migration). Only the listed
+     * permissions are granted, so anything an admin removed earlier stays removed.
+     *
+     * @param  list<string>  $newPermissions
+     */
+    public function grantNewDefaults(array $newPermissions): void
+    {
+        $this->syncPermissions();
+
+        /** @var array<string, list<string>> $defaults */
+        $defaults = config('pace.default_roles', []);
+
+        foreach (Entity::query()->get() as $entity) {
+            foreach ($defaults as $roleName => $permissions) {
+                $grant = array_values(array_intersect($permissions, $newPermissions));
+
+                if ($grant === []) {
+                    continue;
+                }
+
+                $role = Role::query()->where('team_id', $entity->getKey())->where('name', $roleName)->first();
+                $role?->givePermissionTo($grant);
+            }
+        }
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
+
     public function syncPermissions(): void
     {
         /** @var array<string, string> $catalogue */

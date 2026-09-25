@@ -9,6 +9,10 @@ use App\Domain\Identity\Models\User;
 use App\Http\Middleware\IdleTimeout;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -102,4 +106,51 @@ function actingInEntity(User $user, Entity $entity): User
 function genericLoginError(): string
 {
     return __('These details don\'t match our records, or the account is not available. After :n failed attempts an account is locked for :m minutes.', ['n' => 5, 'm' => 15]);
+}
+
+/**
+ * A real .xlsx upload built with PhpSpreadsheet. The first row is the heading row.
+ *
+ * @param  list<list<mixed>>  $rows
+ */
+function xlsxUpload(array $rows, string $name = 'import.xlsx'): UploadedFile
+{
+    $spreadsheet = new Spreadsheet;
+    $spreadsheet->getActiveSheet()->fromArray($rows, null, 'A1', true);
+
+    $path = tempnam(sys_get_temp_dir(), 'pace').'.xlsx';
+    (new Xlsx($spreadsheet))->save($path);
+
+    return new UploadedFile($path, $name, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
+}
+
+/**
+ * Rows of the first sheet of a stored workbook (heading row included).
+ *
+ * @return list<list<mixed>>
+ */
+function readXlsx(string $absolutePath): array
+{
+    return IOFactory::load($absolutePath)->getActiveSheet()->toArray();
+}
+
+/**
+ * Run a callback inside an entity (for creating entity-owned test records).
+ *
+ * @template T
+ *
+ * @param  callable(Entity): T  $callback
+ * @return T
+ */
+function inEntity(Entity $entity, callable $callback): mixed
+{
+    return app(CurrentEntity::class)->run($entity, $callback);
+}
+
+/**
+ * Minimal valid PDF bytes (enough for content sniffing).
+ */
+function pdfBytes(): string
+{
+    return "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[]/Count 0>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
 }

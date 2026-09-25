@@ -8,7 +8,8 @@ Read both before starting work in a new session.
 
 ## Current status
 - **Phase 0 (Plan): done.** Decisions are recorded in PLAN.md §10.
-- **Phase 1 (Foundation): done.** Waiting for review before Phase 2 (Master data).
+- **Phase 1 (Foundation): done.**
+- **Phase 2 (Master data): done.** Waiting for review before Phase 3 (Budgets).
 - Work goes phase by phase. At the end of each phase: stop, summarise (what was built, how to run and test it, decisions needed), and commit.
 
 ## Non-negotiable rules
@@ -16,7 +17,7 @@ Read both before starting work in a new session.
 - **No entity-specific or approval-specific logic in code.** Nothing like `if ($entity->code === 'KE')`. Anything that differs by entity is a setting, master data or a workflow definition.
 - **Entity isolation:** every entity-owned model uses the `BelongsToEntity` trait (global scope plus auto-fill). `entity_id` is never mass-assignable. Every model has a policy that also checks `entity_id`. Foreign IDs return 404. Every new resource gets a test in `tests/Feature/Isolation`.
 - **Never trust client IDs.** Re-fetch through scoped queries and authorise inside every Livewire action and controller method.
-- **Money:** `DECIMAL(18,2)`, FX rates `DECIMAL(18,6)`. Use `Brick\Math\BigDecimal` via `MoneyCast`. Never use floats. Rounding is HALF_UP.
+- **Money:** `DECIMAL(18,2)`, FX rates `DECIMAL(18,6)`. Use `Brick\Math\BigDecimal` via `MoneyCast`. Never use floats. Rounding is `RoundingMode::HalfUp` (brick/math 1.x enum).
 - **Time:** stored in UTC (`APP_TIMEZONE=UTC`), shown in the current entity's timezone through the display helper.
 - **Append-only tables:** `activity_log`, `login_events`, `budget_ledger_entries`, `workflow_actions`. The app never updates or deletes rows in them.
 - **Files:** private `documents` disk only, random names, SHA-256 hash stored, served only by `AttachmentController` after a policy check.
@@ -54,6 +55,16 @@ Laravel 13, PHP 8.5, MySQL 9.7 LTS (8.4-compatible), Livewire 4, Filament 5 (adm
 - **Filament resources** override `getEloquentQuery()` to scope to the current entity. Remove the generated Delete actions unless the policy explicitly allows deletes.
 - **Avatars** use `InitialsAvatarProvider` (inline SVG). Never load external images, fonts or scripts (CSP).
 
+## Key mechanics (Phase 2)
+- **Master data models** (`app/Domain/MasterData/Models`) use the `IsMasterData` trait (entity scope, `is_active`, optional effective dates with `scopeUsableOn`, audit log name `master_data`). There are no deletes anywhere: deactivate, and FKs RESTRICT.
+- **Admin screens** extend `App\Filament\Admin\MasterData\MasterDataResource`, with a `ManageMasterData` page (modal create and edit). Override `createRecord()`/`updateRecord()` for extra work (see BoardPaperResource). One `MasterDataPolicy` covers them all; `VendorPolicy` also lets payment roles edit bank details only.
+- **Money in forms:** never `->numeric()` on money or rate inputs (it produces floats). Use a string input with a regex rule; `DecimalCast` refuses floats. brick/math 1.x uses `RoundingMode::HalfUp`.
+- **Vendor bank details:** `encrypted` casts, `#[Hidden]`, excluded from the attribute audit, `bank_details_changed` events with masked values. They are only filled into forms and exports for `vendors.view_bank_details`.
+- **Files:** `StoreAttachment` is the only way in: allow-list, `finfo` sniffing plus ZIP/OLE signatures, size setting, SHA-256, `AttachmentScanner` hook, random path on the `documents` disk. The only way out is `attachments.download` (entity scope, `AttachmentPolicy` → parent's `view`, audited).
+- **Excel import/export:** add an `ImportDefinition` (usually a `CodeKeyedDefinition`) and register it in `ImportRegistry`; `ExcelActions::for($type)` adds the buttons. Imports are queued (`ProcessImport`) and **all-or-nothing**, with an error report of the uploaded rows plus row number and errors. Exports use the import layout (round-trip).
+- **Currencies** are group-wide (string PK `code`); entities enable them through `entity_currency`, and the base currency is always enabled. Use `Currency::optionsFor($entity)`. FX is `ExchangeRateProvider::rate($entity, $from, $to, $date)` (latest effective, or the inverse pair).
+- **New permissions for existing entities:** add them to `config/pace.php` and ship a data migration that calls `ProvisionEntityRoles::grantNewDefaults([...])`.
+
 ## Commands
 ```bash
 ./vendor/bin/sail up -d                 # start app, MySQL, Mailpit
@@ -88,6 +99,9 @@ composer check                          # lint + analyse + test
 | 2026-09-25 | Phase 1: the idle timeout is a setting enforced by middleware; `SESSION_LIFETIME=480` is only the outer bound. |
 | 2026-09-25 | Phase 1: bulk user import from Excel moves to Phase 2, together with the generic Excel import pipeline. |
 
+| 2026-09-25 | Phase 2: imports are all-or-nothing (finance master data must not be half-loaded); the error report lists every problem by Excel row. |
+| 2026-09-25 | Phase 2: payment roles (vendors.view_bank_details) maintain vendor bank details; other vendor fields need masterdata.manage. |
+| 2026-09-25 | Phase 2: group (USD reporting) exchange rates move to Phase 6 with the group dashboard; entity rates are done. |
 | 2026-09-25 | After Phase 1: Kenya uses QuickBooks (procurement and shipments are standalone systems). Look and feel: professional with pastel colours; interactive dashboards and a strong home screen in Phase 6. |
 
 Still open: hosting target (explain options when needed; Azure recommended), QuickBooks edition, M365 mailbox (**remind the user near roll-out**), logo (PLAN.md §10).

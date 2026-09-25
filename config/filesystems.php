@@ -28,7 +28,35 @@ return [
     |
     */
 
+    /*
+     * Private disk for all attachments and import files. Switch to an
+     * S3-compatible disk in production with DOCUMENTS_DISK=documents-s3.
+     */
+    'documents_disk' => env('DOCUMENTS_DISK', 'documents'),
+
     'disks' => [
+
+        'documents' => [
+            'driver' => 'local',
+            'root' => storage_path('app/documents'),
+            'visibility' => 'private',
+            'serve' => false,
+            'throw' => true,
+            'report' => false,
+        ],
+
+        'documents-s3' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('DOCUMENTS_S3_BUCKET', env('AWS_BUCKET')),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => false,
+        ],
 
         'local' => [
             'driver' => 'local',

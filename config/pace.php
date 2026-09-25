@@ -30,6 +30,12 @@ return [
         'settings.manage' => 'Manage entity settings',
         'audit.view' => 'View the audit log and login history',
         'audit.export' => 'Export the audit log',
+        'masterdata.view' => 'View master data',
+        'masterdata.manage' => 'Create, edit and deactivate master data',
+        'masterdata.import' => 'Import master data from Excel',
+        'masterdata.export' => 'Export master data to Excel',
+        'vendors.view_bank_details' => 'See and edit vendor bank details',
+        'users.import' => 'Import users from Excel',
     ],
 
     /*
@@ -39,8 +45,9 @@ return [
      */
     'default_roles' => [
         'Entity Admin' => [
-            'admin.access', 'users.view', 'users.manage', 'roles.manage',
+            'admin.access', 'users.view', 'users.manage', 'users.import', 'roles.manage',
             'settings.manage', 'audit.view', 'audit.export',
+            'masterdata.view', 'masterdata.manage', 'masterdata.import', 'masterdata.export',
         ],
         'Requester' => [],
         'Approver' => [],
@@ -50,9 +57,9 @@ return [
         'Coordinator' => [],
         'Purchasing' => [],
         'Additional Authoriser' => [],
-        'Payment Team' => [],
-        'Payment Team Manager' => [],
-        'Viewer / Auditor' => ['admin.access', 'users.view', 'audit.view'],
+        'Payment Team' => ['admin.access', 'masterdata.view', 'vendors.view_bank_details'],
+        'Payment Team Manager' => ['admin.access', 'masterdata.view', 'masterdata.export', 'vendors.view_bank_details'],
+        'Viewer / Auditor' => ['admin.access', 'users.view', 'audit.view', 'masterdata.view', 'masterdata.export'],
     ],
 
     /*

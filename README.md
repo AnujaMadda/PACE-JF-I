@@ -7,7 +7,11 @@
 - Original brief: [`docs/BRIEF.md`](docs/BRIEF.md)
 - Security notes: [`docs/SECURITY.md`](docs/SECURITY.md)
 
-**Status:** Phase 1 (Foundation) is complete: entities, sign-in with entity selection, activation, password and lockout policy, roles per entity, the admin panel for users, roles, entities and settings, and the audit log. Master data comes next (Phase 2).
+**Status:** Phases 1 and 2 are complete.
+- Phase 1 (Foundation): entities, sign-in with entity selection, activation, password and lockout policy, roles per entity, the admin panel and the audit log.
+- Phase 2 (Master data): departments, cost and profit centres, GL accounts, internal orders, vendors (bank details encrypted and masked), payment terms, budget codes, Capex categories, board papers with documents, currencies and exchange rates. It also adds Excel import, export and templates, and bulk user import.
+
+Budgets come next (Phase 3).
 
 ## Stack
 Laravel 13 · PHP 8.5 (8.4+ supported) · MySQL 9.7 LTS (8.4 compatible) · Livewire 4 · Filament 5 · Tailwind CSS 4 · spatie/laravel-permission 8 (teams = entities) · spatie/laravel-activitylog 5 · Pest 5 · Larastan 3 · Pint.
@@ -32,13 +36,13 @@ cp .env.example .env
 Run these in separate terminals while developing:
 
 ```bash
-./vendor/bin/sail artisan queue:work     # all mail and notifications are queued
+./vendor/bin/sail artisan queue:work     # mail, notifications and Excel imports are queued
 ./vendor/bin/sail artisan schedule:work  # scheduler (SLA reminders from Phase 6)
 ```
 
 ### Demo accounts (local only)
 
-`DemoUsersSeeder` creates one account per role in Kenya. It **refuses to run in production**. Every account uses the password in `DEMO_PASSWORD` (default `Pace-Demo-2026!`). Sign in with the entity **JF&I Packaging Kenya**.
+`DemoUsersSeeder` creates one account per role in Kenya, and `KenyaMasterDataSeeder` loads **sample** master data (illustrative codes, vendors and rates). It **refuses to run in production**. Every account uses the password in `DEMO_PASSWORD` (default `Pace-Demo-2026!`). Sign in with the entity **JF&I Packaging Kenya**.
 
 | Email | Role |
 |---|---|

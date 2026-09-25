@@ -16,7 +16,6 @@ class Placeholder extends Component
     private const SECTIONS = [
         'capex' => ['Capex Requests', 'Phase 5'],
         'payments' => ['Payments Tracker', 'Phase 5'],
-        'master-data' => ['Master Data', 'Phase 2'],
         'reports' => ['Reports & Analytics', 'Phase 6'],
     ];
 

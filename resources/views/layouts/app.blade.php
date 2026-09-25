@@ -48,7 +48,9 @@
             </div>
 
             <div>
-                <x-nav-link :href="route('master-data.index')" :active="request()->routeIs('master-data.*')">{{ __('Master Data') }}</x-nav-link>
+                @if ($isAdmin && $user->can('masterdata.view'))
+                    <x-nav-link href="{{ url('/admin/departments') }}">{{ __('Master Data') }}</x-nav-link>
+                @endif
                 <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">{{ __('Reports & Analytics') }}</x-nav-link>
             </div>
 

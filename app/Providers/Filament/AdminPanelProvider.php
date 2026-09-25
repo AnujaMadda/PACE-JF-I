@@ -52,6 +52,7 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([])
             ->navigationGroups([
                 NavigationGroup::make(__('Access')),
+                NavigationGroup::make(__('Master data')),
                 NavigationGroup::make(__('Organisation')),
                 NavigationGroup::make(__('System')),
             ])

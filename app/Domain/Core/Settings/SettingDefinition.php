@@ -11,6 +11,7 @@ final readonly class SettingDefinition
      * @param  'int'|'bool'|'string'|'list'  $type
      * @param  'group'|'entity'  $scope  group = one value for all entities; entity = group default with per-entity override
      * @param  list<string>  $rules  Laravel validation rules for the value
+     * @param  list<string>  $itemRules  rules for each element of a 'list' value
      */
     public function __construct(
         public string $key,
@@ -21,6 +22,7 @@ final readonly class SettingDefinition
         public string $label,
         public ?string $help = null,
         public array $rules = [],
+        public array $itemRules = [],
     ) {}
 
     public function cast(mixed $value): mixed
