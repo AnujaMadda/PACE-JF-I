@@ -5,26 +5,39 @@
 @source '../views/**/*.blade.php';
 
 /*
- * PACE theme tokens. The brand colour is not confirmed yet (PLAN.md §10):
- * change the --color-brand-* values here and every screen follows.
+ * PACE theme tokens: professional, calm, pastel (Phase 1 review).
+ * brand = slate-blue for actions and focus (AA contrast on white);
+ * pastel-* = soft tints for cards, badges and chart series.
+ * Change the values here and every screen follows.
  */
 @theme {
     --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
-    --color-brand-50: oklch(0.984 0.014 180.72);
-    --color-brand-100: oklch(0.953 0.051 180.801);
-    --color-brand-200: oklch(0.91 0.096 180.426);
-    --color-brand-300: oklch(0.855 0.138 181.071);
-    --color-brand-400: oklch(0.777 0.152 181.912);
-    --color-brand-500: oklch(0.704 0.14 182.503);
-    --color-brand-600: oklch(0.6 0.118 184.704);
-    --color-brand-700: oklch(0.511 0.096 186.391);
-    --color-brand-800: oklch(0.437 0.078 188.216);
-    --color-brand-900: oklch(0.386 0.063 188.416);
-    --color-brand-950: oklch(0.277 0.046 192.524);
+    --color-brand-50: #f3f5fc;
+    --color-brand-100: #e6eaf8;
+    --color-brand-200: #cdd4f1;
+    --color-brand-300: #aab5e6;
+    --color-brand-400: #8391d8;
+    --color-brand-500: #6474cb;
+    --color-brand-600: #4f5db8;
+    --color-brand-700: #414c99;
+    --color-brand-800: #373f7c;
+    --color-brand-900: #2f3565;
+    --color-brand-950: #1e213f;
 
-    --color-surface: var(--color-slate-50);
-    --color-sidebar: var(--color-slate-900);
+    --color-pastel-sky: #dcebfa;
+    --color-pastel-sky-ink: #1d5a8e;
+    --color-pastel-mint: #d9f2e6;
+    --color-pastel-mint-ink: #1f6b4a;
+    --color-pastel-lavender: #e9e3fa;
+    --color-pastel-lavender-ink: #5b3f9e;
+    --color-pastel-peach: #fde8d8;
+    --color-pastel-peach-ink: #9a4a16;
+    --color-pastel-rose: #fbe1e6;
+    --color-pastel-rose-ink: #9b2c45;
+
+    --color-surface: #f7f8fc;
+    --color-sidebar: #ffffff;
 }
 
 @layer components {

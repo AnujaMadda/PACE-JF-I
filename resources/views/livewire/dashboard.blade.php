@@ -8,14 +8,14 @@
 
     <section class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5" aria-label="{{ __('Key figures') }}">
         @foreach ($kpis as $kpi)
-            <div class="rounded-xl border border-slate-200 bg-white p-5">
-                <p class="text-sm text-slate-500">{{ $kpi }}</p>
-                <p class="mt-2 text-2xl font-semibold text-slate-300">—</p>
+            <div class="rounded-2xl p-5 {{ $kpi['tone'] }}">
+                <p class="text-sm font-medium opacity-80">{{ $kpi['label'] }}</p>
+                <p class="mt-2 text-2xl font-semibold">—</p>
             </div>
         @endforeach
     </section>
 
-    <section class="mt-8 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
+    <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
         <h2 class="font-semibold">{{ __('Welcome to PACE') }}</h2>
         <p class="mt-2 text-sm text-slate-600">{{ __('Capex requests, approvals and dashboards will appear here as they are released.') }}</p>
     </section>

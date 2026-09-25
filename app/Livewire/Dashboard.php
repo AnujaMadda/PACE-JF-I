@@ -19,12 +19,13 @@ class Dashboard extends Component
     {
         return view('livewire.dashboard', [
             'entity' => $currentEntity->require(),
+            // Figures arrive with the Capex lifecycle (Phase 5); tints come from the pastel theme tokens.
             'kpis' => [
-                __('Total Requests'),
-                __('Pending Approvals'),
-                __('Requests in Process'),
-                __('Completed Requests'),
-                __('Total Paid Amount'),
+                ['label' => __('Total Requests'), 'tone' => 'bg-pastel-sky text-pastel-sky-ink'],
+                ['label' => __('Pending Approvals'), 'tone' => 'bg-pastel-peach text-pastel-peach-ink'],
+                ['label' => __('Requests in Process'), 'tone' => 'bg-pastel-lavender text-pastel-lavender-ink'],
+                ['label' => __('Completed Requests'), 'tone' => 'bg-pastel-mint text-pastel-mint-ink'],
+                ['label' => __('Total Paid Amount'), 'tone' => 'bg-pastel-rose text-pastel-rose-ink'],
             ],
         ]);
     }

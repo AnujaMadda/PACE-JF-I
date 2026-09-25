@@ -25,7 +25,7 @@ class InitialsAvatarProvider implements AvatarProvider
             ->implode('');
 
         $svg = sprintf(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="#1e293b"/><text x="50%%" y="50%%" dy=".35em" text-anchor="middle" font-family="system-ui,sans-serif" font-size="26" font-weight="600" fill="#ffffff">%s</text></svg>',
+            '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="#e6eaf8"/><text x="50%%" y="50%%" dy=".35em" text-anchor="middle" font-family="system-ui,sans-serif" font-size="26" font-weight="600" fill="#373f7c">%s</text></svg>',
             e($initials),
         );
 

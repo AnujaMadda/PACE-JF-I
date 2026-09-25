@@ -402,7 +402,7 @@ Capex request form (Livewire and Filament form components): line items, FX auto-
 **Tests:** full happy path, return and resubmit, reject (budget release), cancel before first approval and by admin, PO tolerance, duplicate invoice, invoice over PO, payment SoD, concurrent numbering, isolation on every Livewire action and download.
 
 ### Phase 6 — Visibility
-Notifications (all events in brief section 12, mail plus database, queued, deep links), bell, SLA reminders and escalation (scheduler), delegation set and used notices. Role-aware dashboards and widgets from brief section 13, group consolidated view in the reporting currency. Excel reports (Capex register, pending approvals ageing, budget vs committed vs actual, turnaround by step and approver) and the audit-trail PDF.
+Notifications (all events in brief section 12, mail plus database, queued, deep links), bell, SLA reminders and escalation (scheduler), delegation set and used notices. A designed home screen and interactive, role-aware dashboards (charts with hover and drill-down to the underlying requests; pastel palette), with a mockup for sign-off first. Widgets from brief section 13, and a group consolidated view in the reporting currency. Excel reports (Capex register, pending approvals ageing, budget vs committed vs actual, turnaround by step and approver) and the audit-trail PDF.
 **Tests:** notification dispatch per event, SLA reminder and escalation timing (time travel), widget figures, report contents, export isolation.
 
 ### Phase 7 — Hardening
@@ -422,22 +422,22 @@ A security review against brief section 14 and the OWASP Top 10 (CSP tuned, head
 | # | Topic | Decision |
 |---|---|---|
 | 1 | Onboarding | Admin pre-creates users, and they activate through Sign Up. Self-registration is off. |
-| 2 | Email domains | `jfi.lk`. Kenya has no separate domain for now. Domains are a setting per entity, so adding one later is configuration. |
+| 2 | Email domains | `jfi.lk` only (confirmed again after Phase 1). Domains are a setting per entity, so adding one later is configuration. |
 | 3 | Financial year | April–March for Kenya. `FY27` = the year ending March 2027. |
 | 4 | Budget basis | Annual allocation (the setting also supports YTD). |
 | 5 | Commitment | On submission. |
 | 6 | Additional Authorisation amount | Not seeded. Set by the admin on the process map before activation. |
 | 7 | HoD Approval | Before Pending Coordinator. Configurable. |
-| 8 | Kenya ERP | Open. Stays ERP-neutral (`NullErpConnector`). Not blocking. |
+| 8 | Kenya ERP | **QuickBooks** for accounting. Procurement and import shipments run in separate standalone systems. PACE stays ERP-neutral (`NullErpConnector`). A QuickBooks connector is the first candidate integration after go-live; the others are only reference numbers stored in PACE. |
 | 9 | Reporting currency | USD. Full multi-currency: KES, AED, BDT, CHF, EUR, GBP, USD and more from the ISO 4217 list. |
 | 10 | Hosting | Open. Provider-neutral deployment docs. Needed before Phase 7. |
-| 11 | Brand colour | Open. Neutral slate with a teal accent as `@theme` tokens until confirmed. |
+| 11 | Look and feel | **Professional, with pastel colours**, interactive dashboards and an attractive home screen. Applied after Phase 1: slate-blue brand colour for actions, and pastel sky, mint, lavender, peach and rose tints for cards, badges and chart series (tokens in `resources/css/app.css`). The home screen and interactive dashboards are designed in Phase 6, with a mockup for sign-off first. |
 | 12–13 | Approver roles, invoice upload | Multiple approval roles, all admin-defined. An interactive **process-map designer** (§3.4). Seed defaults are in §7. |
 | 26 | Email sending | Build on Laravel's mailer. Local and dev use Mailpit (SMTP). For production, the recommended path is **Microsoft Graph** via the official `symfony/microsoft-graph-mailer` transport (Entra app registration with `Mail.Send`, restricted to one no-reply mailbox), switched by `MAIL_MAILER` in `.env`. It will be wired in Phase 6, with step-by-step IT instructions. No code depends on the choice. |
 | 14–25, 27 | Other planning items | The proposed defaults are accepted unless you say otherwise: develop on MySQL 9.7 (8.4-compatible); PO tolerance 5%; invoice tolerance 0% without override; payment SoD = block; retention 7 years for records and audit, 2 years for login history, with purge disabled; calendar-hour SLA behind an interface; `tax_amount` plus optional `tax_code`; number assigned at first submission; optional line manager; one global login across entities; per-category quotation minimum; English UI via `__()`; null AV scanner with a hook. |
 
-### Still open (not blocking Phase 1)
-- Kenya ERP name (for the future connector).
-- Production hosting target (before Phase 7).
-- Brand colour or logo.
-- The Microsoft 365 no-reply mailbox and who in IT can create the Entra app registration (before Phase 6).
+### Still open
+- **Production hosting** (needed before Phase 7): where the live system runs, for example Microsoft Azure, AWS, or a server in JF&I's own data centre, and who in IT looks after servers. Recommended: Microsoft Azure, since JF&I already uses Microsoft 365, which also makes Entra ID single sign-on easier later.
+- **QuickBooks edition:** QuickBooks Online or Desktop (matters only for a future connector).
+- **Microsoft 365 mailbox and Graph setup:** remind the user as roll-out approaches (Phase 6).
+- **Logo:** optional; a text logo is used until one is supplied.

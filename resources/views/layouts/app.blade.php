@@ -20,8 +20,8 @@
 <body class="h-full font-sans text-slate-900 antialiased">
 <div class="flex min-h-full">
     {{-- Sidebar --}}
-    <aside class="hidden w-64 shrink-0 flex-col bg-sidebar text-slate-300 md:flex" aria-label="{{ __('Main navigation') }}">
-        <div class="px-5 py-6 text-white"><x-pace-logo /></div>
+    <aside class="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-sidebar text-slate-600 md:flex" aria-label="{{ __('Main navigation') }}">
+        <div class="px-5 py-6 text-slate-900"><x-pace-logo /></div>
 
         <nav class="flex-1 space-y-6 overflow-y-auto px-3 pb-6 text-sm">
             <div>
@@ -29,21 +29,21 @@
             </div>
 
             <div>
-                <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Request Management') }}</p>
+                <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ __('Request Management') }}</p>
                 @foreach (config('pace.processes') as $key => $process)
                     @if ($process['enabled'])
                         <x-nav-link :href="route($key.'.index')" :active="request()->routeIs($key.'.*')">{{ __($process['label']) }}</x-nav-link>
                     @else
-                        <span class="flex items-center justify-between gap-2 rounded-md px-3 py-2 text-slate-500" aria-disabled="true">
+                        <span class="flex items-center justify-between gap-2 rounded-md px-3 py-2 text-slate-400" aria-disabled="true">
                             <span class="truncate">{{ __($process['label']) }}</span>
-                            <span class="shrink-0 whitespace-nowrap rounded bg-slate-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide">{{ __('Soon') }}</span>
+                            <span class="shrink-0 whitespace-nowrap rounded bg-pastel-lavender px-1.5 py-0.5 text-[10px] text-pastel-lavender-ink uppercase tracking-wide">{{ __('Soon') }}</span>
                         </span>
                     @endif
                 @endforeach
             </div>
 
             <div>
-                <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Payment Management') }}</p>
+                <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ __('Payment Management') }}</p>
                 <x-nav-link :href="route('payments.index')" :active="request()->routeIs('payments.*')">{{ __('Payments Tracker') }}</x-nav-link>
             </div>
 
@@ -54,7 +54,7 @@
 
             @if ($isAdmin)
                 <div>
-                    <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{{ __('Admin') }}</p>
+                    <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">{{ __('Admin') }}</p>
                     <x-nav-link href="{{ url('/admin') }}">{{ __('Admin Panel') }}</x-nav-link>
                     @if ($user->isGroupSuperAdmin())
                         <x-nav-link href="{{ url('/admin/system-settings') }}">{{ __('System Settings') }}</x-nav-link>
@@ -96,7 +96,7 @@
 
                 <details class="relative">
                     <summary class="flex cursor-pointer list-none items-center gap-2 rounded-lg px-2 py-1 hover:bg-slate-100">
-                        <span class="flex size-8 items-center justify-center rounded-full bg-slate-800 text-sm font-semibold text-white">{{ \Illuminate\Support\Str::of($user->name)->explode(' ')->map(fn ($p) => mb_substr($p, 0, 1))->take(2)->implode('') }}</span>
+                        <span class="flex size-8 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-800">{{ \Illuminate\Support\Str::of($user->name)->explode(' ')->map(fn ($p) => mb_substr($p, 0, 1))->take(2)->implode('') }}</span>
                         <span class="hidden text-sm font-medium sm:block">{{ $user->name }}</span>
                     </summary>
                     <div class="absolute right-0 z-10 mt-2 w-56 rounded-lg border border-slate-200 bg-white p-1 text-sm shadow-lg">

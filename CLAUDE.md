@@ -88,4 +88,10 @@ composer check                          # lint + analyse + test
 | 2026-09-25 | Phase 1: the idle timeout is a setting enforced by middleware; `SESSION_LIFETIME=480` is only the outer bound. |
 | 2026-09-25 | Phase 1: bulk user import from Excel moves to Phase 2, together with the generic Excel import pipeline. |
 
-Still open: Kenya ERP name, hosting target, brand colour, M365 mailbox (PLAN.md §10).
+| 2026-09-25 | After Phase 1: Kenya uses QuickBooks (procurement and shipments are standalone systems). Look and feel: professional with pastel colours; interactive dashboards and a strong home screen in Phase 6. |
+
+Still open: hosting target (explain options when needed; Azure recommended), QuickBooks edition, M365 mailbox (**remind the user near roll-out**), logo (PLAN.md §10).
+
+## Look and feel
+- Brand colour `brand-*` (slate-blue #4f5db8 at 600) for buttons, links and focus. Pastel tints `pastel-{sky,mint,lavender,peach,rose}` with matching `-ink` text colours for cards, badges and charts.
+- Light sidebar, white cards, `rounded-2xl`, soft borders. Filament primary is `Color::hex('#4f5db8')`.

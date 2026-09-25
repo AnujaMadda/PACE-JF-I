@@ -40,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('PACE Admin')
             ->defaultAvatarProvider(InitialsAvatarProvider::class)
             ->colors([
-                'primary' => Color::Teal,
+                'primary' => Color::hex('#4f5db8'),
                 'gray' => Color::Slate,
             ])
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')

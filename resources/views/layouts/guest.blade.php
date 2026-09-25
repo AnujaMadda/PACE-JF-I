@@ -10,13 +10,13 @@
 </head>
 <body class="h-full font-sans text-slate-900 antialiased">
 <div class="flex min-h-full">
-    <aside class="hidden w-2/5 flex-col justify-between bg-sidebar p-12 text-white lg:flex">
-        <x-pace-logo class="text-white" />
+    <aside class="hidden w-2/5 flex-col justify-between bg-linear-to-br from-brand-100 via-pastel-lavender to-pastel-sky p-12 text-brand-950 lg:flex">
+        <x-pace-logo />
         <div>
             <p class="text-3xl font-semibold leading-tight">{{ __('Payment Approval and Control Engine') }}</p>
-            <p class="mt-3 text-slate-300">{{ __('Capex requests, approvals, purchase orders, invoices and payments in one controlled flow.') }}</p>
+            <p class="mt-3 text-brand-900/80">{{ __('Capex requests, approvals, purchase orders, invoices and payments in one controlled flow.') }}</p>
         </div>
-        <p class="text-sm text-slate-400">&copy; {{ date('Y') }} JF&amp;I Packaging</p>
+        <p class="text-sm text-brand-900/60">&copy; {{ date('Y') }} JF&amp;I Packaging</p>
     </aside>
 
     <main class="flex flex-1 items-center justify-center px-6 py-12">
