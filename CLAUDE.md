@@ -7,7 +7,8 @@ PACE (Payment Approval and Control Engine) is JF&I Packaging's payment approval 
 Read both before starting work in a new session.
 
 ## Current status
-- **Phase 0 (Plan): delivered.** Waiting for answers to the questions in PLAN.md section 10 before Phase 1.
+- **Phase 0 (Plan): done.** Decisions are recorded in PLAN.md §10.
+- **Phase 1 (Foundation): in progress.**
 - Work goes phase by phase. At the end of each phase: stop, summarise (what was built, how to run and test it, decisions needed), and commit.
 
 ## Non-negotiable rules
@@ -63,4 +64,7 @@ Laravel 13, PHP 8.5, MySQL 9.7 LTS (8.4-compatible), Livewire 4, Filament 5 (adm
 | 2026-09-25 | Custom `Attachment` model instead of medialibrary, for hash, scanner hook and authorised downloads. |
 | 2026-09-25 | Workflow conditions are structured JSON evaluated by typed operators. No expression language and no eval. |
 
-Pending decisions: PLAN.md section 10.
+| 2026-09-25 | Phase 0 review: `jfi.lk` domain; FY April–March; annual budget basis; commit on submission; HoD before Coordinator; USD reporting with a full multi-currency ISO 4217 list; admin-defined roles; **process-map workflow designer**; Additional Authorisation amount set in the admin panel (seed workflow is a Draft). |
+| 2026-09-25 | Mail: Mailpit locally. Production transport chosen by `MAIL_MAILER`, with Microsoft Graph (`symfony/microsoft-graph-mailer`) recommended. Wired in Phase 6. |
+
+Still open: Kenya ERP name, hosting target, brand colour, M365 mailbox (PLAN.md §10).

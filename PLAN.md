@@ -156,7 +156,14 @@ Delegation does not get around SoD: a delegate who is also the requester is stil
 
 **Simulator:** in Filament, the admin enters amount, currency, department, category, cost centre, budget status, quotation count and board-paper flag, and sees the selected definition, the step list with applied or skipped reasons, and the named assignees after delegation. It uses the same engine code path in dry-run mode.
 
-**Designer:** a Filament resource for definitions with a reorderable repeater of steps, and a relation manager for conditions, assignee rules and editable fields. It has **Clone definition** and **Activate** actions, and Activate runs a validation pass first.
+**Designer: an interactive process map** (confirmed in the Phase 0 review). It is a Filament page that draws the workflow as a flowchart:
+- **Nodes** are step cards showing the type icon, name, assignee rule and SLA. The Start node is Request Creation and the End node is Completed.
+- A step with conditions shows as a **conditional branch**: a diamond labelled "applies if …" with a bypass line around it. Parallel "all assignees" steps show stacked avatars. Return paths (to requester or previous step) show as dashed back-arrows. Trigger-only steps, such as PO re-approval, hang off the step that triggers them.
+- **Editing happens on the map.** Drag a node to reorder it. Use the "+" on any connector to insert a step. Click a node to open a side panel that edits its type, assignee rule, mode, conditions, allowed actions, editable fields, SLA and escalation. Roles can be created from the panel without leaving the map.
+- **The simulator is drawn on the map.** Enter sample values and the resolved path lights up: skipped steps grey out and each node shows the named assignee.
+- **Actions:** Clone definition, New version, and Activate. Activate runs a validation pass, for example rejecting a condition with no value or an assignee rule that resolves to nobody.
+- **Implementation:** Livewire 4 plus Alpine, SortableJS for drag-and-drop, and an SVG connector layer. There is no React and no BPMN library, which keeps it CSP-friendly and inside the existing stack. The map edits the ordered-steps model described above, where conditions give branching and "all" mode gives parallel approval. That covers every route in the source process without the risk of a free-form graph engine. If you later need routes that split and merge, the engine's step model can move to a graph without changing the UI concept.
+- A clickable mockup will be shared for sign-off before Phase 4 starts.
 
 ### 3.5 Budgets
 - `budgets (entity_id, fiscal_year, budget_code_id, cost_centre_id, annual_amount)` with `budget_allocations (budget_id, period 1–12, amount)`. The sum of the allocations must equal the annual amount.
@@ -167,7 +174,7 @@ Delegation does not get around SoD: a delegate who is also the requester is stil
 
 ### 3.6 Numbers, money and time
 - **Request numbers** come from `number_sequences (entity_id, process_type, fiscal_year, next_value)`, locked with `SELECT … FOR UPDATE` inside the submit transaction. They are **assigned at first submission**, which keeps them gap-free. Drafts show a draft reference such as `DRAFT-7F3K`. The format template is configurable, and the default is `{entity}-{process}-FY{fy2}-{seq:5}` → `KE-CPX-FY27-00001`. A concurrency test uses parallel submissions.
-- **Money:** `DECIMAL(18,2)` columns, a `MoneyCast` to `Brick\Math\BigDecimal`, and rounding `HALF_UP` to 2 dp. FX rates are `DECIMAL(18,6)`, effective-dated per entity and currency pair. The base amount is calculated on the server, and the rate used is snapshotted on the request.
+- **Money:** `DECIMAL(18,2)` columns, a `MoneyCast` to `Brick\Math\BigDecimal`, and rounding `HALF_UP` to 2 dp. FX rates are `DECIMAL(18,6)`, effective-dated per entity and currency pair. **Currencies** form a group-wide ISO 4217 list, seeded with KES, AED, BDT, USD, EUR, GBP, CHF, LKR, INR, CNY and JPY. Each entity chooses which currencies are enabled for transactions. Requests, quotations, POs, invoices and payments can each be in any enabled currency, with the base amount calculated from the effective rate. Group rates, used to convert into the **USD** reporting currency, are held as rates with no entity. The base amount is calculated on the server, and the rate used is snapshotted on the request.
 - **Time:** `APP_TIMEZONE=UTC` and the DB stores UTC. The display helper (`@datetime($ts)`, a Carbon macro) converts to the current entity's timezone. Kenya is `Africa/Nairobi`. The fiscal year is calculated from the entity's `fy_start_month`.
 
 ### 3.7 Settings
@@ -335,7 +342,7 @@ docker-compose.yml (Sail)   phpstan.neon   pint.json   PLAN.md   CLAUDE.md   REA
 
 ## 6. Roles and permissions (initial seed)
 
-The roles are per entity (Spatie team = entity): **Entity Admin, Requester, Approver, Validator, Coordinator, Purchasing, Payment Team, Payment Team Manager, Viewer/Auditor**. **Group Super Admin** is global.
+The roles are per entity (Spatie team = entity): **Entity Admin, Requester, Approver, Budget Approver, Validator, Validation Approver, Coordinator, Purchasing, Additional Authoriser, Payment Team, Payment Team Manager, Viewer/Auditor**. **Group Super Admin** is global. These are seed data only. Admins can create, rename and deactivate roles, and choose any of them as a step assignee.
 
 Permissions are named `{area}.{action}`, for example `capex.create`, `capex.view_own`, `capex.view_all`, `capex.cancel_any`, `capex.edit_fx_rate`, `vendors.view_bank_details`, `masterdata.manage`, `budgets.manage`, `workflows.manage`, `users.manage`, `audit.view`, `reports.export`, `payments.record` and `requests.close`. Workflow step assignment uses **roles**. Screen access uses **permissions**. Admins can create roles and edit permission sets.
 
@@ -343,23 +350,23 @@ Permissions are named `{area}.{action}`, for example `capex.create`, `capex.view
 
 ## 7. Default Kenya Capex workflow (seed)
 
-| # | Step | Type | Assignee rule | Condition | Notes |
+The seed is a **starting template, not fixed logic**. It is created as a **Draft** definition. The admin assigns real users to the roles, fills in the Additional Authorisation amount, adjusts steps on the process map, and then activates it. Activation is refused while any condition value or assignee is still empty. All roles below are ordinary, editable roles, and admins can rename them, add more, or change which role each step uses.
+
+| # | Step | Type | Assignee rule (seeded) | Condition | Notes |
 |---|---|---|---|---|---|
-| 1 | Request Creation | (implicit start) | Requester | — | Minimum 3 quotations, or a sole-source justification |
-| 2 | Budget Approval | Approval | Role: Approver (Budget) [CONFIRM] | `budget_status in (exceeds, none)` | |
+| 1 | Request Creation | (start) | Requester | — | Minimum 3 quotations, or a sole-source justification |
+| 2 | Budget Approval | Approval | Role: Budget Approver | `budget_status in (exceeds, none)` | |
 | 3 | Validation | Validation | Role: Validator | — | Editable: GL account, cost centre, budget code |
-| 4 | Validation Approval | Approval | Role: Approver (Validation) | — | |
-| 5 | Pending Coordinator | Review | Role: Coordinator | — | Editable: vendor confirmation |
-| 6 | Purchasing – Upload PO | Action (Upload PO) | Role: Purchasing | — | PO tolerance check → re-approval step |
-| 7 | HoD Approval | Approval | HoD of request department | — | Position per Q7 |
-| 8 | Additional Authorisation | Approval | Role: Approver (Additional) | `amount_base > KES [CONFIRM]` | |
-| 9 | Invoice Upload & Approved Invoice List | Action (Upload Invoice) | Role: Purchasing / Payment Team [CONFIRM] | — | |
+| 4 | Validation Approval | Approval | Role: Validation Approver | — | |
+| 5 | HoD Approval | Approval | HoD of request department | — | Moved before the coordinator (Phase 0 decision) |
+| 6 | Pending Coordinator | Review | Role: Coordinator | — | Editable: vendor confirmation |
+| 7 | Purchasing – Upload PO | Action (Upload PO) | Role: Purchasing | — | PO tolerance check → re-approval step |
+| 8 | Additional Authorisation | Approval | Role: Additional Authoriser | `amount_base > (set by admin)` | Amount left blank; must be set before activation |
+| 9 | Invoice Upload & Approved Invoice List | Action (Upload Invoice) | Role: Payment Team | — | Assignee changeable on the map |
 | 10 | Payment Team Manager Review | Review | Role: Payment Team Manager | — | |
 | 11 | Payment Processing | Action (Record Payment) | Role: Payment Team | — | SoD: not the final approver |
-| 12 | Completed | (terminal) | — | — | Read-only, archived |
-| (x) | PO Re-approval | Approval | Role: Approver [CONFIRM] | Triggered on PO > approved + tolerance | Not in the normal sequence |
-
----
+| 12 | Completed | (end) | — | — | Read-only, archived |
+| (x) | PO Re-approval | Approval | Role: Additional Authoriser | Triggered when PO > approved + tolerance | Not in the normal sequence |
 
 ## 8. Phase plan
 
@@ -369,7 +376,7 @@ Each phase ends with a summary, run and test instructions, the decisions needed 
 `PLAN.md`, `CLAUDE.md`, `docs/BRIEF.md`, and the questions in section 10. No code.
 
 ### Phase 1 — Foundation
-- Laravel 13 project on PHP 8.5. Sail with MySQL (per Q14), Mailpit and optional Redis. Pint, Larastan and Pest configured. GitHub Actions CI (lint, static analysis, tests on MySQL).
+- Laravel 13 project (`composer.json` requires PHP ^8.4; the Sail runtime and production run 8.5). Sail with MySQL (per Q14), Mailpit and optional Redis. Pint, Larastan and Pest configured. GitHub Actions CI (lint, static analysis, tests on MySQL).
 - Core: `entities`, `CurrentEntity`, `BelongsToEntity` and scope, settings service and registry, security headers, idle timeout, timezone display helpers.
 - Identity: users, entity access, Spatie permission with teams, roles and permissions seed, login with entity selection, generic errors, lockout and unlock, rate limiting, sign-up and activation (signed link), optional self-registration flag, forgot and reset password, password policy and history, optional expiry, database sessions with force logout, login history, entity switcher (audited).
 - Filament admin panel: Entities (super admin), Users (create, invite, resend, reset link, lock and unlock, deactivate, force logout, login history, delegate field), Roles and Permissions, System Settings (auth-related keys), Audit Log viewer (basic).
@@ -386,7 +393,7 @@ Budgets with 12 allocations, Excel import, the ledger service (commit, release, 
 **Tests:** allocation sum rule, availability under both modes, each ledger transition, ledger append-only, fiscal-year boundaries.
 
 ### Phase 4 — Workflow engine
-Definitions, versioning and snapshots, selection rules, steps, conditions, assignee resolvers, SoD guard, delegation, instance, task and action models, the engine API (`start`, `act`, `reassign`, `insertReapproval`), the designer (reorder, clone, activate with validation) and the simulator. Default Kenya Capex workflow seed. The engine is tested against a **test-only fake process**, so it is proven to be process-agnostic before Capex exists.
+Definitions, versioning and snapshots, selection rules, steps, conditions, assignee resolvers, SoD guard, delegation, instance, task and action models, the engine API (`start`, `act`, `reassign`, `insertReapproval`), the **process-map designer** (drag to reorder, insert on a connector, side-panel step editor, clone, new version, activate with validation) with the simulator drawn on the map. Mockup sign-off comes before the build. Default Kenya Capex workflow seed. The engine is tested against a **test-only fake process**, so it is proven to be process-agnostic before Capex exists.
 **Tests:** condition operators, skip logging, each resolver, unresolved-assignee block and admin notification, any versus all mode, SoD (all three rules plus the allow flag), delegation and "on behalf of", versioning (in-flight requests keep their snapshot), definition selection by priority, simulator parity with the real run.
 
 ### Phase 5 — Capex lifecycle
@@ -409,38 +416,27 @@ A security review against brief section 14 and the OWASP Top 10 (CSP tuned, head
 
 ---
 
-## 10. Questions and assumptions to confirm before Phase 1
+## 10. Decisions (Phase 0 review, 2026-09-25)
 
-Each item has my **proposed default**. You can reply "accept default" item by item.
+| # | Topic | Decision |
+|---|---|---|
+| 1 | Onboarding | Admin pre-creates users, and they activate through Sign Up. Self-registration is off. |
+| 2 | Email domains | `jfi.lk`. Kenya has no separate domain for now. Domains are a setting per entity, so adding one later is configuration. |
+| 3 | Financial year | April–March for Kenya. `FY27` = the year ending March 2027. |
+| 4 | Budget basis | Annual allocation (the setting also supports YTD). |
+| 5 | Commitment | On submission. |
+| 6 | Additional Authorisation amount | Not seeded. Set by the admin on the process map before activation. |
+| 7 | HoD Approval | Before Pending Coordinator. Configurable. |
+| 8 | Kenya ERP | Open. Stays ERP-neutral (`NullErpConnector`). Not blocking. |
+| 9 | Reporting currency | USD. Full multi-currency: KES, AED, BDT, CHF, EUR, GBP, USD and more from the ISO 4217 list. |
+| 10 | Hosting | Open. Provider-neutral deployment docs. Needed before Phase 7. |
+| 11 | Brand colour | Open. Neutral slate with a teal accent as `@theme` tokens until confirmed. |
+| 12–13 | Approver roles, invoice upload | Multiple approval roles, all admin-defined. An interactive **process-map designer** (§3.4). Seed defaults are in §7. |
+| 26 | Email sending | Build on Laravel's mailer. Local and dev use Mailpit (SMTP). For production, the recommended path is **Microsoft Graph** via the official `symfony/microsoft-graph-mailer` transport (Entra app registration with `Mail.Send`, restricted to one no-reply mailbox), switched by `MAIL_MAILER` in `.env`. It will be wired in Phase 6, with step-by-step IT instructions. No code depends on the choice. |
+| 14–25, 27 | Other planning items | The proposed defaults are accepted unless you say otherwise: develop on MySQL 9.7 (8.4-compatible); PO tolerance 5%; invoice tolerance 0% without override; payment SoD = block; retention 7 years for records and audit, 2 years for login history, with purge disabled; calendar-hour SLA behind an interface; `tax_amount` plus optional `tax_code`; number assigned at first submission; optional line manager; one global login across entities; per-category quotation minimum; English UI via `__()`; null AV scanner with a hook. |
 
-**From the brief (section 17)**
-1. **User onboarding.** Users are pre-created by an admin and activate through Sign Up. Self-registration stays off. *Default: yes.*
-2. **Allowed email domain(s).** Is it only `jfi.lk`? Do the Kenya staff have a separate domain (for example a `.co.ke`)? *Default: `jfi.lk` for group users, plus the Kenya domain you give me.*
-3. **Kenya financial year start month.** *Default: April (April–March, in line with Sri Lankan group reporting).* Also, the `FY27` label means **the fiscal year that ends in 2027**. *Default: yes.*
-4. **Budget availability basis.** Annual allocation or year-to-date allocation? *Default: annual* (simpler for Capex, which is lumpy). The setting will support both.
-5. **Budget commitment timing.** On submission or on final approval? *Default: on submission* (this prevents over-committing a budget line with parallel requests).
-6. **Approval thresholds.** The Additional Authorisation amount (KES) and any other amount bands. *Default placeholder: KES 5,000,000.*
-7. **HoD Approval position.** After PO upload (as in the source flow) or before Pending Coordinator? *Default: before Pending Coordinator*, because approving after the PO is raised means the PO is issued before the HoD approves. Either position will be configurable.
-8. **ERP used by Kenya** for POs and payments (for the future connector). *Default: record as "SAP (to be confirmed)"; no integration now.*
-9. **Group reporting currency.** *Default: USD*, using the effective-dated rates table. Who maintains the group rates (head office finance)?
-10. **Production hosting target.** For example an Azure VM or App Service (M365 shop), AWS, a local DC or a Sri Lankan/Kenyan cloud. *Default: a generic Linux VM or container host; the docs stay provider-neutral.*
-11. **Primary brand colour.** A hex value, or a logo to take it from. *Default: neutral slate with a deep teal accent until confirmed.*
-
-**Additional questions from planning**
-
-12. **Default workflow assignees.** For Budget Approval, Validation Approval, Additional Authorisation and PO Re-approval: separate roles, or the generic "Approver" role? *Default: create sub-roles (`Budget Approver`, `Validation Approver`, `Additional Authoriser`) so each step has its own user list.*
-13. **Invoice Upload step (9).** Who does it: Purchasing, Payment Team or the requester? *Default: Payment Team.*
-14. **MySQL version.** MySQL **9.7 LTS** is now available (Docker `mysql:lts`) and is newer than 8.4 LTS. *Default: develop on 9.7 LTS and keep the code 8.4-compatible, so either works if the hosting provider's managed MySQL only offers 8.4.*
-15. **PO tolerance and invoice tolerance** defaults. *Default: 5% for PO over approved amount; 0% for invoices over PO without an override.*
-16. **Payment SoD mode.** *Default: block.* Also, should the Payment Team Manager reviewer be different from the payment recorder? *Default: yes, enforced by the "same person on two steps" rule.*
-17. **Data retention.** How long to keep completed requests, attachments, audit logs and login history? *Default: 7 years for financial records and audit; 2 years for login history. Purge jobs will be built but disabled until confirmed.*
-18. **SLA clock.** Calendar hours or business hours (working days, entity public holidays)? *Default: calendar hours in Phase 6, with the calculation behind an interface so a business-hours calendar can be added.*
-19. **Taxes on invoices.** Is one `tax_amount` field enough, or do you need tax type and rate (for example Kenyan VAT 16% and withholding tax)? *Default: `tax_amount` plus an optional `tax_code`; the total includes tax.*
-20. **Request numbering.** Numbers are assigned **at first submission** (drafts get a temporary reference), which keeps the sequence gap-free. A cancelled request keeps its number. *Default: yes.*
-21. **Line manager.** Is a line manager recorded for each user (entered by the admin or imported)? *Default: an optional field on the user.*
-22. **Group users.** Head-office users (for example in Sri Lanka) are users with no home entity who are granted access to Kenya. Is a single global email identity across entities acceptable? *Default: yes, one account and roles per entity.*
-23. **Quotation minimum overrides.** Should some categories (for example small-value or specialised equipment) allow fewer than 3 quotations without the sole-source flag? *Default: minimum per entity with per-category override; below the minimum always needs a justification.*
-24. **Languages.** Is the UI English only? *Default: English only; strings go through Laravel's `__()` so they can be translated later.*
-25. **Antivirus.** Is any scanning service available now (for example ClamAV on the server)? *Default: the null scanner, plus the hook.*
-26. **Mail.** A Microsoft 365 mailbox to send from (for example `pace-noreply@…`), and whether SMTP AUTH is allowed on the tenant. Microsoft is deprecating basic SMTP AUTH, so the Graph API or OAuth SMTP may be needed. *Default: SMTP settings in `.env`, with a transport that can be swapped.*
-27. **Naming.** The working branch is `claude/x2p-capex-phase-0-…`. Per the brief, "X2P", "Emerald X2P" and "REAP" will not appear anywhere in the product or code. *No action needed.*
+### Still open (not blocking Phase 1)
+- Kenya ERP name (for the future connector).
+- Production hosting target (before Phase 7).
+- Brand colour or logo.
+- The Microsoft 365 no-reply mailbox and who in IT can create the Entra app registration (before Phase 6).
