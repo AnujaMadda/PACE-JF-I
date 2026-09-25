@@ -1,0 +1,46 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+
+/*
+ * PACE theme tokens. The brand colour is not confirmed yet (PLAN.md §10):
+ * change the --color-brand-* values here and every screen follows.
+ */
+@theme {
+    --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+    --color-brand-50: oklch(0.984 0.014 180.72);
+    --color-brand-100: oklch(0.953 0.051 180.801);
+    --color-brand-200: oklch(0.91 0.096 180.426);
+    --color-brand-300: oklch(0.855 0.138 181.071);
+    --color-brand-400: oklch(0.777 0.152 181.912);
+    --color-brand-500: oklch(0.704 0.14 182.503);
+    --color-brand-600: oklch(0.6 0.118 184.704);
+    --color-brand-700: oklch(0.511 0.096 186.391);
+    --color-brand-800: oklch(0.437 0.078 188.216);
+    --color-brand-900: oklch(0.386 0.063 188.416);
+    --color-brand-950: oklch(0.277 0.046 192.524);
+
+    --color-surface: var(--color-slate-50);
+    --color-sidebar: var(--color-slate-900);
+}
+
+@layer components {
+    .pace-input {
+        @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 focus:outline-none;
+    }
+
+    .pace-label {
+        @apply mb-1 block text-sm font-medium text-slate-700;
+    }
+
+    .pace-button {
+        @apply inline-flex w-full items-center justify-center rounded-lg bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700;
+    }
+
+    .pace-link {
+        @apply font-medium text-brand-700 hover:text-brand-800 hover:underline;
+    }
+}

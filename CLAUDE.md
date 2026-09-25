@@ -8,7 +8,7 @@ Read both before starting work in a new session.
 
 ## Current status
 - **Phase 0 (Plan): done.** Decisions are recorded in PLAN.md §10.
-- **Phase 1 (Foundation): in progress.**
+- **Phase 1 (Foundation): done.** Waiting for review before Phase 2 (Master data).
 - Work goes phase by phase. At the end of each phase: stop, summarise (what was built, how to run and test it, decisions needed), and commit.
 
 ## Non-negotiable rules
@@ -29,6 +29,8 @@ Laravel 13, PHP 8.5, MySQL 9.7 LTS (8.4-compatible), Livewire 4, Filament 5 (adm
 
 ## Code layout
 - Domain code: `app/Domain/{Core,Identity,MasterData,Budget,Workflow,Capex,Documents,Notifications,Audit,Reporting,Integrations}`
+  - The User model is `App\Domain\Identity\Models\User` (there is no `app/Models`).
+  - Models use Laravel 13 attributes: `#[Fillable]`, `#[Hidden]`, `#[UseFactory]`.
 - Admin UI: `app/Filament/Admin`
 - User UI: `app/Livewire`, `resources/views`
 - Tests: `tests/Feature/<Module>` and `tests/Unit`. Tests run on MySQL, not SQLite.
@@ -42,7 +44,17 @@ Laravel 13, PHP 8.5, MySQL 9.7 LTS (8.4-compatible), Livewire 4, Filament 5 (adm
 - Migrations: add foreign keys and indexes on `entity_id` plus common filters. No hard deletes of referenced master data; use `is_active`.
 - User-facing strings go through `__()`.
 
-## Commands (available from Phase 1)
+## Key mechanics (Phase 1)
+- **Current entity:** `App\Domain\Core\Support\CurrentEntity` (scoped singleton). `EnsureEntitySelected` sets it from `session('entity_id')` and also calls `setPermissionsTeamId()`. In jobs, commands and seeders, use `app(CurrentEntity::class)->run($entity, fn () => ...)`.
+- **Middleware order matters:** `IdleTimeout` and `EnsureEntitySelected` are placed before `Authenticate` in the priority list (`bootstrap/app.php`), because Filament's `canAccessPanel()` needs the permission team. Both are also Livewire persistent middleware, so Livewire actions see the entity.
+- **Permissions vs roles:** the permission catalogue and default roles live in `config/pace.php`. `ProvisionEntityRoles` creates the roles for a new entity. Roles are per entity (`roles.team_id` = entity id). Group Super Admin is the `users.is_group_super_admin` flag, not a Spatie role.
+- **`Gate::before`** lets super admins pass everything except destructive abilities (`delete`, `restore`, …), which always go to the policy.
+- **Security-sensitive user columns** (status, lockout, password, super-admin flag) are not fillable. Only the Identity actions change them, with `forceFill` plus an audit entry.
+- **Audit entries** get entity, IP, user agent and request ID automatically (`AppServiceProvider::enrichAuditRecords`). Pass `withProperties(['entity_id' => …])` when the entity differs from the current one.
+- **Filament resources** override `getEloquentQuery()` to scope to the current entity. Remove the generated Delete actions unless the policy explicitly allows deletes.
+- **Avatars** use `InitialsAvatarProvider` (inline SVG). Never load external images, fonts or scripts (CSP).
+
+## Commands
 ```bash
 ./vendor/bin/sail up -d                 # start app, MySQL, Mailpit
 ./vendor/bin/sail artisan migrate --seed
@@ -52,7 +64,11 @@ Laravel 13, PHP 8.5, MySQL 9.7 LTS (8.4-compatible), Livewire 4, Filament 5 (adm
 ./vendor/bin/pint --test                # formatting
 ./vendor/bin/phpstan analyse            # Larastan
 ./vendor/bin/pest --parallel            # tests
+composer check                          # lint + analyse + test
 ```
+- `laravel/pao` rewrites tool output as JSON when it detects an AI agent. Prefix commands with `PAO_DISABLE=1` for normal output.
+- Tests need a MySQL database named `testing` (Sail creates it). In the cloud dev container: `docker run -d --name pace-mysql -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=pace -e MYSQL_USER=pace -e MYSQL_PASSWORD=secret -p 3306:3306 mysql:9.7`, then create `testing` and grant `pace` access to `testing` and `testing_%`.
+- Test helpers in `tests/Pest.php`: `kenya()`, `makeEntity()`, `userIn($entity, [roles])`, `actingInEntity($user, $entity)`, `setting($key, $value)`.
 
 ## Decisions log
 | Date | Decision |
@@ -66,5 +82,10 @@ Laravel 13, PHP 8.5, MySQL 9.7 LTS (8.4-compatible), Livewire 4, Filament 5 (adm
 
 | 2026-09-25 | Phase 0 review: `jfi.lk` domain; FY April–March; annual budget basis; commit on submission; HoD before Coordinator; USD reporting with a full multi-currency ISO 4217 list; admin-defined roles; **process-map workflow designer**; Additional Authorisation amount set in the admin panel (seed workflow is a Draft). |
 | 2026-09-25 | Mail: Mailpit locally. Production transport chosen by `MAIL_MAILER`, with Microsoft Graph (`symfony/microsoft-graph-mailer`) recommended. Wired in Phase 6. |
+
+| 2026-09-25 | Phase 1: Group Super Admin is a user flag (Spatie teams cannot hold a global role assignment cleanly). |
+| 2026-09-25 | Phase 1: sign-in uses PACE's own controllers (no Breeze or Fortify); Filament has no login page and shares the session and entity. |
+| 2026-09-25 | Phase 1: the idle timeout is a setting enforced by middleware; `SESSION_LIFETIME=480` is only the outer bound. |
+| 2026-09-25 | Phase 1: bulk user import from Excel moves to Phase 2, together with the generic Excel import pipeline. |
 
 Still open: Kenya ERP name, hosting target, brand colour, M365 mailbox (PLAN.md §10).

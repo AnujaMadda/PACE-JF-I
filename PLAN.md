@@ -3,7 +3,7 @@
 **PACE — Payment Approval and Control Engine.** *Approvals at PACE.*
 Owner: JF&I Packaging. First release covers Capex for the Kenya entity. UAE and Bangladesh will be added through configuration.
 
-The full brief is in [`docs/BRIEF.md`](docs/BRIEF.md). This plan says how it will be built. Open questions are in [section 10](#10-questions-and-assumptions-to-confirm-before-phase-1). Phase 1 does not start until they are answered.
+The full brief is in [`docs/BRIEF.md`](docs/BRIEF.md). This plan says how it will be built. Decisions from the Phase 0 review are in [section 10](#10-decisions-phase-0-review-2026-09-25).
 
 ---
 
@@ -375,7 +375,8 @@ Each phase ends with a summary, run and test instructions, the decisions needed 
 ### Phase 0 — Plan *(this deliverable)*
 `PLAN.md`, `CLAUDE.md`, `docs/BRIEF.md`, and the questions in section 10. No code.
 
-### Phase 1 — Foundation
+### Phase 1 — Foundation *(delivered 2026-09-25)*
+Delivered as described below, with two changes: bulk user import from Excel moved to Phase 2 (it uses the generic import pipeline built there), and the audit log export is CSV until the reporting module adds Excel.
 - Laravel 13 project (`composer.json` requires PHP ^8.4; the Sail runtime and production run 8.5). Sail with MySQL (per Q14), Mailpit and optional Redis. Pint, Larastan and Pest configured. GitHub Actions CI (lint, static analysis, tests on MySQL).
 - Core: `entities`, `CurrentEntity`, `BelongsToEntity` and scope, settings service and registry, security headers, idle timeout, timezone display helpers.
 - Identity: users, entity access, Spatie permission with teams, roles and permissions seed, login with entity selection, generic errors, lockout and unlock, rate limiting, sign-up and activation (signed link), optional self-registration flag, forgot and reset password, password policy and history, optional expiry, database sessions with force logout, login history, entity switcher (audited).
